@@ -470,6 +470,8 @@ in: _'app/views/reviews/show.html.erb'_
 <div><%= simple_format @review.body %></div>
 ```
 
+---
+
 ## Deleting Reviews
 
 uses the #destroy method
@@ -505,12 +507,150 @@ end
 
 Add a confirmation
 
-in: _''_
+in: _'app/views/reviews/show.html.erb'_
 
 ```html
 <%= link_to "Delete Review", review_path, method: :delete, data: {confirm: "Are
 you sure?"} %>
 ```
+
+---
+
+## Editing Reviews
+
+Add an edit link on the page
+
+needs the edit and update routes
+
+```text
+  ------------------------------------------------------------------------------
+  edit_review GET   |   /reviews/:id/edit(.:format)   |   reviews#edit
+  ------------------------------------------------------------------------------
+  PUT               |   /reviews/:id(.:format)        |   reviews#update
+  ------------------------------------------------------------------------------
+```
+
+in actions div in: _'app/views/reviews/show.html.erb'_
+
+We want to add the edit link
+
+```html
+<%= link_to "Edit this Review", edit_review_path(@review) %>
+```
+
+then in the controller in: _'app/controllers/reviews_controller.rb'_
+
+```ruby
+def edit
+  # find the review to edit
+  @review = Review.find(params[:id])
+end
+```
+
+then we need an edit view
+
+add: _'app/views/reviews/edit.html.erb'_
+
+in this file
+
+```html
+<h3>Edit your Restaurant Review</h3>
+
+<%= form_for @review do |f| %>
+
+<p><%= f.label :title %> <%= f.text_field :title %></p>
+
+<p><%= f.label :body %> <%= f.text_area :body %></p>
+
+<p><%= f.label :score %> <%= f.number_field :score %></p>
+
+<%= f.submit "Save your edit"%> <% end %>
+```
+
+Then update
+
+in controller
+
+```ruby
+def update
+  # find review
+  @review = Review.find(params[:id])
+  # update with new info
+  @review.update(params.require(:review).permit(:title, :body, :score))
+  # redirect to somewhere new
+  redirect_to review_path
+end
+```
+
+---
+
+## Cleaning code
+
+in controller
+
+```ruby
+def form_params
+  params.require(:review).permit(:title, :body, :score)
+end
+
+# then in update and create...
+# @review.update(form_params)
+# saves repetition
+
+```
+
+---
+
+### Making use of partials
+
+for the form...
+
+add: _'\_form.html.erb'_
+
+the \_ file prefix tells rails it is a partial
+
+```html
+<%= form_for @review do |f| %>
+
+<p><%= f.label :title %> <%= f.text_field :title %></p>
+
+<p><%= f.label :body %> <%= f.text_area :body %></p>
+
+<p><%= f.label :score %> <%= f.number_field :score %></p>
+
+<%= f.submit "Save your edit"%> <% end %>
+```
+
+then in HTML files
+
+```html
+<%= render "form" %>
+```
+
+---
+
+## Images and Stylesheets
+
+these are located in: _'app/assets/'_
+
+add: _'global.scss'_ to _'app/assets/stylesheets/'_
+
+here I can structure SASS however I want
+
+!! It would be interesting to see how POSTCSS and other preprocessors would be added to a project
+
+adding an image
+
+```html
+<%= image_tag "bien-logo.svg" %>
+
+<!-- Wrapping tags... -->
+<h1>
+  <%= link_to root_path do %> <%= image_tag "bien-reviews.svg" %> <% end %>
+</h1>
+```
+
+## GIT and GITHUB
 
 .
 .
