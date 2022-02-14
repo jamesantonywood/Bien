@@ -487,11 +487,9 @@ uses the #destroy method
 in: _'app/views/reviews/show.html.erb'_
 
 ```html
-
-  <div class="actions">
-    <%= link_to "Delete Review", review_path, method: :delete %>
-  </div>
-
+<div class="actions">
+  <%= link_to "Delete Review", review_path, method: :delete %>
+</div>
 ```
 
 in: _'app/controllers/reviews_controller.rb'_
@@ -512,7 +510,8 @@ Add a confirmation
 in: _'app/views/reviews/show.html.erb'_
 
 ```html
-<%= link_to "Delete Review", review_path, method: :delete, data: {confirm: "Are you sure?"} %>
+<%= link_to "Delete Review", review_path, method: :delete, data: {confirm: "Are
+you sure?"} %>
 ```
 
 ---
@@ -542,7 +541,7 @@ We want to add the edit link
 then in the controller in: _'app/controllers/reviews_controller.rb'_
 
 ```ruby
-def edit 
+def edit
   # find the review to edit
   @review = Review.find(params[:id])
 end
@@ -558,25 +557,14 @@ in this file
 <h3>Edit your Restaurant Review</h3>
 
 <%= form_for @review do |f| %>
-  
-  <p>
-    <%= f.label :title %>
-    <%= f.text_field :title %>
-  </p>
 
-  <p>
-    <%= f.label :body %>
-    <%= f.text_area :body %>
-  </p>
+<p><%= f.label :title %> <%= f.text_field :title %></p>
 
-  <p>
-    <%= f.label :score %>
-    <%= f.number_field :score %>
-  </p>
+<p><%= f.label :body %> <%= f.text_area :body %></p>
 
-  <%= f.submit "Save your edit"%>
+<p><%= f.label :score %> <%= f.number_field :score %></p>
 
-<% end %>
+<%= f.submit "Save your edit"%> <% end %>
 ```
 
 Then update
@@ -584,7 +572,7 @@ Then update
 in controller
 
 ```ruby
-def update 
+def update
   # find review
   @review = Review.find(params[:id])
   # update with new info
@@ -598,7 +586,7 @@ end
 
 ## Cleaning code
 
-in controller 
+in controller
 
 ```ruby
 def form_params
@@ -615,33 +603,22 @@ end
 
 ### Making use of partials
 
-for the form... 
+for the form...
 
-add: _'_form.html.erb'_
+add: _'\_form.html.erb'_
 
-the _ file prefix tells rails it is a partial
+the \_ file prefix tells rails it is a partial
 
 ```html
 <%= form_for @review do |f| %>
-  
-  <p>
-    <%= f.label :title %>
-    <%= f.text_field :title %>
-  </p>
 
-  <p>
-    <%= f.label :body %>
-    <%= f.text_area :body %>
-  </p>
+<p><%= f.label :title %> <%= f.text_field :title %></p>
 
-  <p>
-    <%= f.label :score %>
-    <%= f.number_field :score %>
-  </p>
+<p><%= f.label :body %> <%= f.text_area :body %></p>
 
-  <%= f.submit "Save your edit"%>
+<p><%= f.label :score %> <%= f.number_field :score %></p>
 
-<% end %>
+<%= f.submit "Save your edit"%> <% end %>
 ```
 
 then in HTML files
@@ -651,7 +628,6 @@ then in HTML files
 ```
 
 ---
-
 
 ## Images and Stylesheets
 
@@ -670,16 +646,11 @@ adding an image
 
 <!-- Wrapping tags... -->
 <h1>
-  <%= link_to root_path do %>
-    <%= image_tag "bien-reviews.svg" %>
-  <% end %>
+  <%= link_to root_path do %> <%= image_tag "bien-reviews.svg" %> <% end %>
 </h1>
 ```
 
 ## GIT and GITHUB
-
-
-
 
 .
 .

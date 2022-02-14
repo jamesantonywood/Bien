@@ -650,8 +650,6 @@ adding an image
 </h1>
 ```
 
-## GIT and GITHUB
-
 .
 .
 .
