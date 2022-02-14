@@ -1,0 +1,12 @@
+
+<h1><%= @review.title %></h1>
+<p><%= @review.score %> / 10</p>
+
+<div class="body">
+    <%= simple_format @review.body %>
+</div>
+
+<div class="actions">
+    <%= link_to "Edit this Review", edit_review_path(@review) %>
+    <%= link_to "Delete Review", review_path(@review), method: :delete, data: { confirm: "Are you sure?" } %>
+</div>
