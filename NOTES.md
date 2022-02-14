@@ -485,11 +485,9 @@ uses the #destroy method
 in: _'app/views/reviews/show.html.erb'_
 
 ```html
-
-  <div class="actions">
-    <%= link_to "Delete Review", review_path, method: :delete %>
-  </div>
-
+<div class="actions">
+  <%= link_to "Delete Review", review_path, method: :delete %>
+</div>
 ```
 
 in: _'app/controllers/reviews_controller.rb'_
@@ -510,9 +508,9 @@ Add a confirmation
 in: _''_
 
 ```html
-<%= link_to "Delete Review", review_path, method: :delete, data: {confirm: "Are you sure?"} %>
+<%= link_to "Delete Review", review_path, method: :delete, data: {confirm: "Are
+you sure?"} %>
 ```
-
 
 .
 .
