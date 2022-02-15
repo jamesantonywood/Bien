@@ -523,11 +523,13 @@ Add an edit link on the page
 needs the edit and update routes
 
 ```text
+  
   ------------------------------------------------------------------------------
   edit_review GET   |   /reviews/:id/edit(.:format)   |   reviews#edit
   ------------------------------------------------------------------------------
   PUT               |   /reviews/:id(.:format)        |   reviews#update
   ------------------------------------------------------------------------------
+
 ```
 
 in actions div in: _'app/views/reviews/show.html.erb'_
@@ -569,7 +571,7 @@ in this file
 
 Then update
 
-in controller
+in: _'app/controllers/reviews_controller.rb'_
 
 ```ruby
 def update
@@ -586,7 +588,7 @@ end
 
 ## Cleaning code
 
-in controller
+in: _'app/controllers/reviews_controller.rb'_
 
 ```ruby
 def form_params
@@ -605,9 +607,9 @@ end
 
 for the form...
 
-add: _'\_form.html.erb'_
+add: _'_form.html.erb'_
 
-the \_ file prefix tells rails it is a partial
+the _ file prefix tells rails it is a partial
 
 ```html
 <%= form_for @review do |f| %>
@@ -649,6 +651,108 @@ adding an image
   <%= link_to root_path do %> <%= image_tag "bien-reviews.svg" %> <% end %>
 </h1>
 ```
+
+---
+
+## Ruby Syntax
+
+```ruby
+
+  # How variables work
+
+  ## Numbers
+  @number = 13
+  @number = 14
+  # number === 14
+
+  ## Strings
+  @username = "jameswood" + "admin"
+
+  ## Symbols
+  # We cant ever change a symbol
+  @method = :delete
+
+  ## Arrays
+  @shopping_list = ["eggs", "bacon", "sausages"]
+
+  ## Hashes - similar to objects
+  @person = { 
+    first_name: "James", 
+    age: 26, 
+    shopping: ["eggs"] 
+  }
+
+  ## Hash with a key as a symbol
+  @link = { method: :delete }
+
+
+```
+
+# Week 2
+
+## Checking data with model validations
+
+Data lives with the models and are the gateholders
+
+[Active Record Validations](https://guides.rubyonrails.org/active_record_validations.html)
+
+Active record is what ruby uses to check and look after data.
+
+in _'app/models/review.rb'_
+
+generated
+
+```ruby
+class Review < ApplicationRecord
+end
+```
+
+```ruby
+class Review < ApplicationRecord
+  validates :title, presence: true
+  validates :body, length: { minimum: 10 }
+  validates :score, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }
+end
+```
+validates model input to see if is allowed to save, currently redirects to post if invalid without updating
+
+conditional redirect if invalid goto edit view with error messages
+else goto post with edits completed
+
+---
+
+## Reopening project
+
+ALWAYS start with a git pull
+Then run server and take a look at the site
+Then start working in a Text Editor
+
+---
+
+## Fixing controllers for validations
+
+in: _'app/controllers/reviews_controller.rb'_
+
+```ruby
+   
+  def create
+      # take info from form and add to model
+      @review = Review.new(form_params)
+      # if the model passes validation
+      if @review.save
+          # redirect to the homepage
+          redirect_to root_path
+      else
+          #otherwise show the new view
+          render "new"
+      end
+  end
+
+```
+
+---
+
+
 
 .
 .
