@@ -771,6 +771,45 @@ Also need this in update action
 
 ---
 
+## Using to_param to make SEO-friendly URLs
+
+Currently the reviews have a slug that is akin to the following
+
+root/reviews/5
+
+and for SEO and legibility it would be better to have
+
+root/reviews/review-title
+
+in _'app/models/review.rb'_
+
+default slug is
+
+```ruby
+
+  #default deep within rails
+  def to_param
+    id.to_s
+  end  
+
+  # overwrite in the model
+  def to_param
+    id.to_s + "-" + title
+  end  
+
+  #produces: 5-Hello%20World
+
+  #url friensly form
+
+  def to_param
+    title.parameterize
+  end  
+  #produces: 4-hello-world
+
+
+```
+
+
 
 
 .
