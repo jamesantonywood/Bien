@@ -1,7 +1,17 @@
 <% content_for :page_title, @review.title %>
 
 <h1><%= @review.title %></h1>
-<p><%= @review.score %> / 10</p>
+<h2><%= @review.restaurant %></h2>
+
+<div class="score">
+    <p><%= @review.score %> / 10</p>
+</div>
+
+<% if @review.ambience.present? %>
+    <div class="ambience">
+        <p><%= @review.ambience %></p> 
+    </div>
+<% end %>
 
 <div class="body">
     <%= simple_format @review.body %>
