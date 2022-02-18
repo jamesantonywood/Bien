@@ -750,6 +750,25 @@ in: _'app/controllers/reviews_controller.rb'_
 
 ```
 
+Also need this in update action
+
+```ruby
+
+  # update the edited review in the database
+  def update 
+      # find review
+      @review = Review.find(params[:id])
+      # update with new info
+      if @review.update(form_params)
+          # redirect to somewhere new
+          redirect_to review_path(@review)
+      else 
+          render "edit"
+      end
+  end
+
+```
+
 ---
 
 
