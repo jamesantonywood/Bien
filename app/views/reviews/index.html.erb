@@ -3,11 +3,21 @@
 
 <nav class="filters">
     <%= link_to "All Prices", root_path %>
-    <%= link_to "$", root_path(price: 1, cuisine: @cuisine) %>
-    <%= link_to "$$", root_path(price: 2, cuisine: @cuisine) %>
-    <%= link_to "$$$", root_path(price: 3, cuisine: @cuisine) %>
-
+    <div>
+    <%= link_to "$", root_path(price: 1, cuisine: @cuisine, location: @location) %>
+    <%= link_to "$$", root_path(price: 2, cuisine: @cuisine, location: @location) %>
+    <%= link_to "$$$", root_path(price: 3, cuisine: @cuisine, location: @location) %>
+    </div>
+    <div>
     <%= link_to "Indian", root_path(cuisine: "Indian", price: @price) %>
+    </div>
+
+    <form action="/">
+        <input type="text" name="location" placeholder="search location..." value="<%= @location %>">
+        <input type="hidden" name="price" value="<%= @price %>">
+        <input type="hidden" name="cuisine" value="<%= @cuisine %>">
+    </form>
+
 </nav>
 
 <% @reviews.each do |review| %>

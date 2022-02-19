@@ -1003,6 +1003,7 @@ if there is a filter return those reviews that match otherwise return all review
 
 ## Adding multiple filters in one controller action
 
+filter multiple params
 ```ruby
 
   def index
@@ -1027,6 +1028,9 @@ if there is a filter return those reviews that match otherwise return all review
 
 ```
 
+
+update links to include both params so both can be included in the filter, not needed if one filter at a time is required
+
 ```html
 
   <nav class="filters">
@@ -1040,8 +1044,39 @@ if there is a filter return those reviews that match otherwise return all review
 
 ```
 
+---
 
+## Adding geolocation using the geocoder gem
 
+[Awesome ruby gems](https://github.com/markets/awesome-ruby)
+
+[Geocoder](https://github.com/alexreisner/geocoder)
+
+Gems are libraries for specific tasks
+
+Rails is like one big gem
+
+```bash
+
+  ~gem install geocoder
+
+```
+
+or in the gemfile
+
+```ruby
+
+  gem 'geocoder'
+
+```
+
+and run in bash
+
+```bash
+
+  ~bundle install
+
+```
 
 
 
