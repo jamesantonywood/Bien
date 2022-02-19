@@ -13,6 +13,18 @@
     </div>
 <% end %>
 
+<% if @review.price.present? %>
+    <div class="price">
+        <p><%= @review.price %></p> 
+    </div>
+<% end %>
+
+<% if @review.cuisine.present? %>
+    <div class="cuisine">
+        <p><%= @review.cuisine %></p> 
+    </div>
+<% end %>
+
 <div class="body">
     <%= simple_format @review.body %>
 </div>

@@ -802,12 +802,263 @@ default slug is
   #url friensly form
 
   def to_param
-    title.parameterize
+    id.to_s + "-" + title.parameterize
   end  
   #produces: 4-hello-world
 
+```
+
+## Adding page titles with content_for
+
+in the application wrapper html 
+
+_'app/views/layouts/application.html.erb'_
+
+```html
+  
+  <title><%= content_for :page_title  %> - Bien Revies – Bien reviews the best restaurants in the world</title>
 
 ```
+
+:page_title is a symbol because its never going to change across the site
+
+Then in our reviews views (show, new, index, edit)
+
+```html
+  
+  <!-- What is the symbol?, what is its value -->
+  <!-- Show Page -->
+  <% content_for :page_title, @review.title %>
+
+  <!-- New Page -->
+  <% content_for :page_title, "Add a new review" %>
+
+```
+
+## Uncovering field in the Database
+
+The model is not the database
+
+The model is a tool for interacting and controlling the database
+
+in: _'db/migrate'_
+
+there are a number of files called migrations
+
+migrations are files that tell rails what to do with the database
+
+currently there is one migration that tells the database to: 
+
+- Create a table called reviews
+- Add the fields detailed in the migration with their data-type
+
+in: '/db/'
+
+there is also a 'schema.rb' file
+
+This is a final version of what the database looks like
+
+---
+
+To add a new field to our reviews that already exists in the database
+in this case the 'retaurant' field
+
+we have to update the M, V and C
+
+we update the model to validate the input
+we update the views to display the field (in new, edit or a form partial for both of these) and to render the data (show)
+we update the controller that says what is being submitted, in this case it is in our custom form_params method:
+
+```ruby
+
+  def form_params
+     # what can be submitted to the model and then in turn the database?
+        params.require(:review).permit(:title, :body, :score, :restaurant)
+    end
+
+
+```
+
+
+## Adding new database fields with migrations
+
+If a client wants extra fields for their reviews that we dont have in our database
+
+we do this with migrations
+
+eg. phone number, ambience
+
+we want to make two new columns in the database
+
+in terminal
+
+```bash
+
+~ Rails generate migration add_new_info_to_reviews 
+
+```
+
+[info on migrations](https://guides.rubyonrails.org/active_record_migrations.html)
+
+in the newly generated migration file 
+
+```ruby
+
+  class AddNewInfoToReviews < ActiveRecord::Migration[6.1]
+    def change
+
+      add_column :reviews, :phone_number, :string
+      add_column :reviews, :ambience, :string
+
+    end
+  end
+
+```
+Make sure migration file is checked and double-checked as its harder to rollback
+
+
+back in terminal
+run the migrations
+
+```bash
+
+~ Rails db:migrate
+
+```
+
+then check 'schema.rb' to see the new columns/updates
+
+we can then use these new fields in the application
+
+if a field is to be optional we dont need to validate it in the model, we can however continue to use it in the views as we have been
+(remember to update the controller to allow the new data to be submitted)
+
+```html
+<% if @review.ambience.present? %>
+  <div class="ambience">
+      <p><%= @review.ambience %></p> 
+  </div>
+<% end %>
+```
+
+## Filtering our params
+
+A user should be able to search by location and filter by price and cuisine
+
+in index action of controller and index.html.erb
+
+
+### using the query string...
+
+if there is a filter return those reviews that match otherwise return all reviews
+
+```ruby
+
+  def index
+    @price = params[:price]
+
+    if @price.present?
+      #filter by price
+      ...?
+    else
+      # all reviews
+      Reviews.all
+    end
+
+  end
+
+```
+
+## Filtering with our reviews controller
+
+```ruby
+
+  def index
+    # query sting params are saved in params with symbols {:price : value}
+    @price = params[:price]
+
+    if @price.present?
+      #filter by price
+      @reviews = Review.where(price: @price)
+    else
+      # all reviews
+      @reviews = Review.all
+    end
+
+  end
+
+```
+
+```html
+
+  <nav class="filters">
+    <%= link_to "All Prices", root_path %>
+    <%= link_to "$", root_path(price: 1) %>
+    <%= link_to "$$", root_path(price: 2) %>
+    <%= link_to "$$$", root_path(price: 3) %>
+  </nav>
+
+```
+
+
+## Adding multiple filters in one controller action
+
+```ruby
+
+  def index
+
+    @price = params[:price]
+    @cuisine = params[:cuisine]
+
+    #start with all reviews
+    @reviews = Review.all
+
+    #filtering by price
+    if @price.present?
+      @reviews = @reviews.where(price: @price)
+    end
+
+    #filter by cuisine
+    if @cuisine.present?
+      @reviews = @reviews.where(cuisine: @cusine)
+    end
+
+  end
+
+```
+
+```html
+
+  <nav class="filters">
+      <%= link_to "All Prices", root_path %>
+      <%= link_to "$", root_path(price: 1, cuisine: @cuisine) %>
+      <%= link_to "$$", root_path(price: 2, cuisine: @cuisine) %>
+      <%= link_to "$$$", root_path(price: 3, cuisine: @cuisine) %>
+
+      <%= link_to "Indian", root_path(cuisine: "Indian", price: @price) %>
+  </nav>
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
