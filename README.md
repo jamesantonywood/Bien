@@ -1404,6 +1404,49 @@ updated show
 <% end %>
 ```
 
+## showing comments count on reviews index
+
+[Rails pluralize](https://apidock.com/rails/ActionView/Helpers/TextHelper/pluralize)
+
+```html
+
+<% @reviews.each do |review| %>
+
+  <div class="review">
+      <%= link_to review_path(review) do %>
+          <h2><%= review.title %></h2>
+          <p>
+              <%= review.cuisine %> - 
+              <%= pluralize review.comments.count, "comment" %>
+          </p>
+
+      <% end %>
+  </div>
+
+<% end %>
+
+```
+
+# Going live with Heroku
+
+follow heroku docs to set up the CLI 
+
+run heroku login
+
+in gemfile
+
+```ruby
+#update database to pg for production only
+
+group development do
+  # Use sqlite3 as the database for Active Record
+  gem 'sqlite3', '~> 1.4'
+end
+
+group production do
+  gem 'pg'
+end
+```
 
 .
 .
