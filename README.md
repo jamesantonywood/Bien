@@ -1078,24 +1078,331 @@ and run in bash
 
 ```
 
+Geocoder wants latitude and longitude columns in the database to work with so we need to add this to the reviews with a migration...
 
 
+```bash
+~rails generate migration add_location_to_reviews
+```
+
+then in the newly generated migration db/migrate
+
+```ruby
+class AddLocationToReviews < ActiveRecord::Migration[6.1]
+  def change
+
+    add_column :reviews, :address, :text
+    add_column :reviews, :latitude, :float
+    add_column :reviews, :longitude, :float
+
+  end
+end
+
+```
+
+in review model, app/models/review.rb
+
+```ruby
+class Review < ApplicationRecord
+    # Geocoder
+    geocoded_by :address
+    after_validation :geocode
+
+    # Check model input
+    validates :title, presence: true
+    validates :body, length: { minimum: 10 }
+    validates :score, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }
+    validates :restaurant, presence: true
+    validates :address, presence: true
+
+    def to_param
+        id.to_s + "-" + title.parameterize
+    end  
+
+end
+```
+
+M is done, now we need V: form, show, etc.
+
+```html
+<p>
+  <%= f.label :restaurant %>
+  <%= f.text_field :restaurant %>
+</p>
+```
+
+Now for C controller for geocoder
+
+```ruby
+  
+  def form_params
+      params.require(:review).permit(:title, :address, :restaurant, :body, :score, :ambience, :price, :cuisine)
+  end
+
+```
+
+! Addresses have to be spelled correctly... 
+
+## Filtering by location
+
+in controller#index
+
+```ruby
+  
+  #filter near Location
+  if @location.present?
+      # return all reviews that are in a 1 mile radius of the search term
+      @reviews = @reviews.near(@location, 1)
+  end
+
+```
+
+## Adding a search location form
+
+in index.erb.html
+
+```html
+
+  <form action="/">
+      <input type="text" name="location" placeholder="search location..." value="<%= @location %>">
+      <input type="hidden" name="price" value="<%= @price %>">
+      <input type="hidden" name="cuisine" value="<%= @cuisine %>">
+  </form>
+
+```
 
 
+## Making our forms simple using simple_form
+
+[simple form github](https://github.com/heartcombo/simple_form)
+
+add simple form to the gemfile and install the bundle.
+
+then we can install simple form into the application by
+
+```bash
+  
+  $ rails generate simple_form:install
+
+  # outputs
+  create  config/initializers/simple_form.rb
+  exist  config/locales
+  create  config/locales/simple_form.en.yml
+  create  lib/templates/erb/scaffold/_form.html.erb
+
+```
+
+simple form reduces the amount of code needed for the input form
+
+in _'_form.html.erb'_ partial we can replace the verbose markup with 
+
+```html
+
+  <%= simple_form_for @review do |f|%>
+    <%= f.input :title %>
+    <%= f.input :restaurant %>
+    <%= f.input :address %>
+    <%= f.input :body %>
+    <%= f.input :cuisine %>
+    <%= f.input :price %>
+    <%= f.input :score %>
+    <%= f.input :ambience %>
+
+    <%= f.button :submit %>
+  <% end %>
+
+``` 
+
+This will also give us extra handy tools such as marking required fields, displaying errors next to input's with errors and giving error classes to inputs for styling.
+
+## Highlighting our links with active_link_to
+
+[active_link_to gem](https://github.com/comfy/active_link_to)
+
+```html
+
+  <%= active_link_to "All Restaurants", root_path, active: { price: nil, cuisine: nil, location: nil } %>
+  <div>
+    <%= active_link_to "$", root_path(price: 1, cuisine: @cuisine, location: @location), active: { price: 1 } %>
+    <%= active_link_to "$$", root_path(price: 2, cuisine: @cuisine, location: @location), active: { price: 2 } %>
+    <%= active_link_to "$$$", root_path(price: 3, cuisine: @cuisine, location: @location), active: { price: 3 }  %>
+  </div>
+  <div>
+    <%= active_link_to "Indian", root_path(cuisine: "Indian", price: @price), active: { cuisine: "Indian" }  %>
+  </div>
+
+```
 
 
+# Introducing Comments
+
+Any data-type needs an MVC structure. If this site was to list job positions this would be a new MVC Model(Job), Views(index, show, new, edit), Controller(jobs_controller).
+Data types stand alone but we can make them talk to each other with a 'relationship'
+
+For instance Reviews might have Comments, this would be a 'one-to-many' relationship
+
+Relationships can be 
+
+- one-to-one
+- one-to-many
+- many-to-many
+
+## One-to-many Relationships
+
+Comments are their own data-type or another table in the database
+
+one Review can have many comments but a comment cant have many reviews.
+
+This is what makes it a one-to-many relationship
+
+An illustration of a comments table
+
+```text
+
+  User       |   Body                 |   Review ID   |
+  -----------------------------------------------------
+  -----------------------------------------------------
+  James      |   Expensive! :o        |   4           |
+  -----------------------------------------------------
+  Chloe      |   So Nice!             |   4           |
+  -----------------------------------------------------
+  Charlie    |   Meow!                |   1           |
+  -----------------------------------------------------
+  -----------------------------------------------------
+
+```
+
+## Adding the comments model
+
+```bash
+rails generate model Comment body:text review:belongs_to
+
+# Check generated migration to see if the information is correct then...
+rails db:migrate
+
+# Make the database in sync
+
+```
+
+in review.rb model
+
+```ruby
+
+  # add an association that has a 1-to-many relationship
+  has_many :comments
+
+```
+
+in comment.rb model
+
+```ruby
+class Comment < ApplicationRecord
+  belongs_to :review
+
+  validates :body, presence: true
+
+end
+```
+
+Now the groundwork is laid for the two data-types to work together but it wont work just yet.
+
+Still need a UI for users to leave comments
+and the controller actions to save and display comments
 
 
+## creating the comments controller
 
+For now - until we have an admin system - users can only add comments not edit and update
 
+```bash
 
+  rails generate controller comments
 
+```
 
+### set up routes
 
+```ruby
+Rails.application.routes.draw do
+  resources :reviews do 
+    resources :comments
+  end
 
+  root "reviews#index"
+end
+```
 
+having the comments resource in a do-end after reviews ties the comments to the reviews
 
+in reviews show page
 
+```
+
+<!-- Adding the 'add comment' form -->
+
+<h3>Add a comment</h3>
+
+<%= simple_form_for [@review, Comment.new] do |f| %>
+    <%= f.input :body, label: "Type your comment here" %>
+    <%= f.button :submit, "Comment" %>
+<% end %>
+
+```
+
+and in the comments controller
+
+```ruby
+
+class CommentsController < ApplicationController
+
+    def create
+        # What review did we leave a comment on?
+        # We get the review id because we nested comments in the routes file
+        @review = Review.find(params[:review_id])
+
+        # the new comment is to be added to the comments field in the reviews db table
+        @comment = @review.comments.new(params.require(:comment).permit(:body))
+
+        # save the comment
+        @comment.save
+
+        # go back to the review page
+        redirect_to review_path(@review)
+    end
+
+end
+
+```
+
+### showing the comments
+
+in reviews show page
+
+```html
+<h3>Comments</h3>
+
+<% @review.comments.each do |comment| %>
+    <div class="comment">
+        <%= simple_format comment.body %>
+        <p>Posted at: <%= comment.created_at %></p>
+    </div>
+<% end %>
+```
+
+[rails date helpera](https://api.rubyonrails.org/v6.1.4/classes/ActionView/Helpers/DateHelper.html)
+
+updated show
+
+```html
+<h3>Comments</h3>
+
+<% @review.comments.order_by('created_at desc').each do |comment| %>
+    <div class="comment">
+        <%= simple_format comment.body %>
+        <p>Posted at: <%= time_ago_in_words comment.created_at %> ago</p>
+    </div>
+<% end %>
+```
 
 
 .

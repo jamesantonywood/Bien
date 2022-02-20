@@ -96,6 +96,9 @@ nav.filters {
     margin: 0 5px 0 0;
     text-decoration: none;
     color: $black;
+    &.active {
+      color: $green;
+    }
   }
 
   div,
@@ -107,5 +110,15 @@ nav.filters {
     min-width: 200px;
     font-size: 14px;
     padding: 4px 5px;
+  }
+}
+
+.comment {
+  font-size: 14px;
+  border-bottom: 2px solid $lightyellow;
+
+  p.posted {
+    color: #999999;
+    font-size: 12px;
   }
 }

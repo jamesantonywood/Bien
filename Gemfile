@@ -28,6 +28,11 @@ gem 'jbuilder', '~> 2.7'
 # Add in geocoding
 gem 'geocoder'
 
+# Add in simple_form make our forms nice and easy
+gem 'simple_form'
+
+# Adding active_link_to to highlight selected filters
+gem 'active_link_to'
 
 
 # Reduces boot times through caching; required in config/boot.rb

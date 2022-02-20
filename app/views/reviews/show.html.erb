@@ -33,3 +33,20 @@
     <%= link_to "Edit this Review", edit_review_path(@review) %>
     <%= link_to "Delete Review", review_path(@review), method: :delete, data: { confirm: "Are you sure?" } %>
 </div>
+
+<h3>Comments</h3>
+
+<% @review.comments.order('created_at desc').each do |comment| %>
+    <div class="comment">
+        <%= simple_format comment.body %>
+        <p class="posted">Posted at: <%= time_ago_in_words comment.created_at %> ago</p>
+    </div>
+<% end %>
+
+
+<h3>Add a comment</h3>
+
+<%= simple_form_for [@review, Comment.new] do |f| %>
+    <%= f.input :body, label: "Type your comment here" %>
+    <%= f.button :submit, "Comment" %>
+<% end %>
