@@ -34,3 +34,17 @@
 - Edit Review (edit)
 - Delete any review (destroy)
 - Update a row in the database
+
+## User features
+
+- user sign up
+- user log-in
+- showing that we're logged in
+- user log out
+- hooking up reviews & comments
+- Authorization
+- Bookmarking / favouriting
+
+
+
+
