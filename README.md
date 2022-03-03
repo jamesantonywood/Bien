@@ -1448,6 +1448,53 @@ group production do
 end
 ```
 
+solved bundle install issue when deploying to heroku
+```text
+I have same issue: remote: ! Failed to install gems via Bundler.
+
+if you see the problem is this:
+
+remote:  Your bundle only supports platforms ["x86_64-darwin-16"] but your local platform
+remote:  is x86_64-linux. Add the current platform to the lockfile with `bundle  loc
+remote:  --add-platform x86_64-linux` and try again.
+its mean this :
+
+Your bundle only supports platforms ["x86_64-darwin-16"] but your local platform is x86_64-linux. Add the current platform to the lockfile with `bundle loc --add-platform x86_64-linux` and try again.
+If you see in your gemfile.loc you only have this :
+
+PLATFORMS
+  x86_64-darwin-16
+So I did this command, To add in your platform in gemfile.loc
+
+bundle lock --add-platform x86_64-linux
+This will update your Gemfile.loc :
+
+PLATFORMS
+  x86_64-darwin-16
+  x86_64-linux
+Continue :
+
+git add .
+git commit -m "add platform x86_64-linux"
+Push again
+
+git push heroku master:main
+Solve!
+```
+## set up db on heroku
+
+start commands with
+
+heroku run
+
+migrate the database
+
+heroku run rails db:migrate
+
+# HOMEWORK
+Add this profanity filter to comments
+[profanity filter](https://github.com/mobomo/profanity_filter)
+
 .
 .
 .

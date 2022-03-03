@@ -38,7 +38,7 @@
 
 <% @review.comments.order('created_at desc').each do |comment| %>
     <div class="comment">
-        <%= simple_format comment.body %>
+        <%= simple_format ProfanityFilter::Base.clean(comment.body, 'hollow') %>
         <p class="posted">Posted at: <%= time_ago_in_words comment.created_at %> ago</p>
     </div>
 <% end %>
