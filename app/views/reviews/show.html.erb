@@ -3,8 +3,41 @@
 <h1><%= @review.title %></h1>
 <h2><%= @review.restaurant %></h2>
 
+<% if is_logged_in? %>
+
+   <p>
+
+        <% if @review.bookmarks.where(user: @current_user).any? %>
+            <%= link_to "UnBookmark", review_bookmark_path(@review), method: :delete %>
+        <% else %>
+            <%= link_to "Bookmark", review_bookmark_path(@review), method: :post %>
+        <% end %>
+   </p>
+
+<% end %>
+
+<h3>Bookmarked by...</h3>
+<ul>
+    <% @review.bookmarks.each do |bookmark| %>
+        <li><%= bookmark.user.username %></li>
+    <% end %>
+</ul>
+
+
+
+
 <div class="score">
     <p><%= @review.score %> / 10</p>
+</div>
+
+<div class="user">
+    <p>Posted By: 
+        <%if @review.user.present? %>
+            <%= link_to @review.user.username, user_path(@review.user) %>
+        <%else%>
+            Anonymous
+        <%end%>
+    </p>
 </div>
 
 <% if @review.ambience.present? %>
@@ -29,10 +62,12 @@
     <%= simple_format @review.body %>
 </div>
 
+<% if @review.user == @current_user %>
 <div class="actions">
     <%= link_to "Edit this Review", edit_review_path(@review) %>
     <%= link_to "Delete Review", review_path(@review), method: :delete, data: { confirm: "Are you sure?" } %>
 </div>
+<% end %>
 
 <h3>Comments</h3>
 
@@ -41,6 +76,15 @@
         <%# <%= simple_format ProfanityFilter::Base.clean(comment.body, 'hollow') %>
         <%# moved profanity filter to the model %>
         <%= simple_format comment.body %>
+        
+        <p class="posted">Posted By: 
+        <% if comment.user.present? %>
+            <%= link_to comment.user.username, user_path(comment.user) %>
+        <% else %>
+            Anonymous
+        <% end %>
+        </p>
+
         <p class="posted">Posted at: <%= time_ago_in_words comment.created_at %> ago</p>
     </div>
 <% end %>

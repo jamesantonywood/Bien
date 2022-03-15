@@ -3,6 +3,12 @@ class Review < ApplicationRecord
     # add an association that has a 1-to-many relationship
     has_many :comments
 
+    # add an association for bookmarks
+    has_many :bookmarks
+
+    # Add an association to a user
+    belongs_to :user
+
     # Geocoder
     geocoded_by :address
     after_validation :geocode

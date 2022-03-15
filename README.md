@@ -1143,6 +1143,8 @@ Now for C controller for geocoder
 
 ! Addresses have to be spelled correctly... 
 
+---
+
 ## Filtering by location
 
 in controller#index
@@ -1156,6 +1158,8 @@ in controller#index
   end
 
 ```
+
+---
 
 ## Adding a search location form
 
@@ -1171,6 +1175,7 @@ in index.erb.html
 
 ```
 
+---
 
 ## Making our forms simple using simple_form
 
@@ -1215,6 +1220,8 @@ in _'_form.html.erb'_ partial we can replace the verbose markup with
 
 This will also give us extra handy tools such as marking required fields, displaying errors next to input's with errors and giving error classes to inputs for styling.
 
+---
+
 ## Highlighting our links with active_link_to
 
 [active_link_to gem](https://github.com/comfy/active_link_to)
@@ -1233,6 +1240,7 @@ This will also give us extra handy tools such as marking required fields, displa
 
 ```
 
+---
 
 # Introducing Comments
 
@@ -1246,6 +1254,8 @@ Relationships can be
 - one-to-one
 - one-to-many
 - many-to-many
+
+---
 
 ## One-to-many Relationships
 
@@ -1271,6 +1281,8 @@ An illustration of a comments table
   -----------------------------------------------------
 
 ```
+
+---
 
 ## Adding the comments model
 
@@ -1309,6 +1321,7 @@ Now the groundwork is laid for the two data-types to work together but it wont w
 Still need a UI for users to leave comments
 and the controller actions to save and display comments
 
+---
 
 ## creating the comments controller
 
@@ -1319,6 +1332,8 @@ For now - until we have an admin system - users can only add comments not edit a
   rails generate controller comments
 
 ```
+
+---
 
 ### set up routes
 
@@ -1374,6 +1389,9 @@ end
 
 ```
 
+---
+
+
 ### showing the comments
 
 in reviews show page
@@ -1404,6 +1422,9 @@ updated show
 <% end %>
 ```
 
+---
+
+
 ## showing comments count on reviews index
 
 [Rails pluralize](https://apidock.com/rails/ActionView/Helpers/TextHelper/pluralize)
@@ -1426,6 +1447,9 @@ updated show
 <% end %>
 
 ```
+
+---
+
 
 # Going live with Heroku
 
@@ -1481,6 +1505,9 @@ Push again
 git push heroku master:main
 Solve!
 ```
+
+---
+
 ## set up db on heroku
 
 start commands with
@@ -1491,9 +1518,1064 @@ migrate the database
 
 heroku run rails db:migrate
 
+---
+
 # HOMEWORK
 Add this profanity filter to comments
 [profanity filter](https://github.com/mobomo/profanity_filter)
+
+Added this to the view first but it is better to do this in the model. 
+
+The model is the point where we get data, filtering profanity here means we always have the filtered data when creating new Views. Better than having to remember to sanitize input. Keeps code DRY and can prevent simple errors.
+
+---
+
+---
+
+
+# Week 3
+
+
+## User System Gems
+
+user systems can vary from client to client. it is a good idea to get to grips with writing these from scratch so user systems can be taylored to client need. 
+
+a gem might be device...
+
+---
+
+## User associations
+
+Currently we have two models 
+
+- reviews (has_many comments)
+- comments (belongs_to review)
+  a one to many relationship
+
+When it comes to the User model
+
+- A user has one-to-many relationship with reviews
+- A user has one-to-many relationship with comments
+
+---
+
+## What is in the model
+
+User: 
+  - username (unique, required)
+  - email (uniquem required)
+  - password_digest (has_secure_password), encrypted, one way transformation
+  - real_name (default to username if blank)
+
+---
+
+## The user Model
+
+```bash
+rails generate model User username:string email:string password_digest:sting real_name:string
+```
+
+model test and migration files created
+
+check migration and then sync with database
+
+```bash
+rails db:migrate
+```
+
+
+Now add has_secure_password in the model
+this will bcrypt the given password into a secure form and save it into the database password_digest.
+
+
+in app/models/user.rb
+```ruby
+
+  class User < ApplicationRecord
+
+    # Run has_secure_password
+    has_secure_password
+
+    # Validate username
+    validtes :username, presence: true, uniqueness: true
+
+    # Validates email
+    validates :email, presence: true, uniqueness: true
+
+    # We dont need to validate real_name becuase it is an optional field
+
+  end
+
+```
+
+## adding users controller
+
+create user controller: 
+
+- index    | list                     |   Read
+- show     | single                   |
+- new      | set-up-new (show form)   |   Create
+- create   | add new to db            |
+- edit     | edit fields (show form)  |   Update
+- update   | update db                |
+- destroy  | delete                   |   Delete
+
+for user 
+
+index   | show all users
+show    | users profile
+new     | Sign up flow
+create  | sign up flow
+
+```bash
+rails generate controller users
+```
+
+no way to access users because there isnt a route 
+
+in config routes.rb
+
+```ruby
+
+  Rails.application.routes.draw do
+    # resources sets up crud paths for the resource
+    resources :reviews do 
+      resources :comments
+    end
+
+    resources :users
+
+    # root of the whole site is the reviews index
+    root "reviews#index"
+  end
+
+```
+
+## adding a simple sign up form
+
+define new action in the controller then in the views folder add new.html.erb 
+
+```html
+
+  <h2>Sign Up</h2>
+
+  <%= simple_form_for @user do |f| %>
+
+      <%= f.input :username %>
+      <%= f.input :email %>
+
+      <%= f.button :submit, "Sign Up" %>
+
+  <% end %>
+
+```
+
+## adding password field
+
+in the model we ran has_secure_password and this will output the password_digest in our database
+
+For this to work we need a password and a password_confirmation input as part of the sign up form. 
+
+```html
+
+  <h2>Sign Up</h2>
+
+  <%= simple_form_for @user do |f| %>
+
+      <%= f.input :username %> 
+      <%= f.input :email %>
+      <%= f.input :password %>
+      <%= f.input :password_confirmation %>
+
+      <%= f.button :submit, "Sign Up" %>
+
+  <% end %>
+
+```
+
+## Creating Users
+
+currently create action doesnt exist so the data passed into the form doesnt get assigned to the db
+
+in controller
+
+```ruby
+
+    def create
+        # take the form params
+        # create a new user
+        @user = User.new(form_params)
+        # if its valid and it saves, go to the users index
+        # if not, see the form with errors
+        if @user.save
+            redirect_to users_path
+        else
+            render "new"
+        end
+    end
+
+    #DRY function for the form params
+    def form_params
+        params.require(:user).permit(:username, :email, :password, :password_confirmation)
+    end
+
+```
+
+now we need do define the list of all users
+
+the index action
+
+```ruby
+
+  def index
+        @users = User.all
+    end
+
+
+```
+
+```html
+
+  
+  <% @users.each do |user| %>
+
+      <p><%= user.username %> (<%= user.email %>)</p>
+      <%= user.password_digest %>
+  <% end %>
+
+```
+
+password was password
+password digest returns $2a$12$ANGfiU.5qV3/VMcLElfE5OAyJdY0O2usf2PJ3f6v5CbJ3kMZXzlsS
+
+
+## Introducing Sessions
+
+sessions use cookies
+cookies are small bits of information - they track you around a website
+lets the browser know you are logged in
+
+in bien we want a session that ties to each user when they are logged in
+
+## Params vs Sessions
+
+params give you some context for the page
+eg. show param[:id]
+
+sessions stay with you accross other pages
+eg. the user stays logged in across pages... 
+
+we need to add a Session controller
+Actions:
+new
+create
+destroy
+
+## The Sessions Controller
+
+```bash
+rails generate controller sessions
+```
+
+Add URLs first
+
+config/routes.rb
+add: 
+
+```ruby
+  
+  resources :sessions
+
+```
+
+```ruby
+
+  class SessionsController < ApplicationController
+
+      def new
+          # log in form
+      end
+
+      def create
+          # try to log in
+          
+      end
+
+      def destroy
+          # log out
+      end
+
+  end
+
+```
+add a new.html.erb in the sessions views
+
+```html
+    
+  <h2>Log in to Bien</h2>
+
+  <%# adding url arg to tell this form to go to create as it doesnt have a model %>
+  <%= simple_form_for :session, url: sessions_path do |f| %>
+
+      <%= f.input :username %>
+      <%= f.input :password %>
+      <%= f.button :submit, "Log In" %>
+
+  <% end %>
+
+```
+
+## The log in action
+
+```ruby
+
+   def create
+        # try to log in
+        # get session params from the form
+        @form_data = params.require(:session)
+        # pull out the username and password from form data
+        @username = @form_data[:username]
+        @password = @form_data[:password]
+        
+        # lets check the user is who they say they are
+        @user = User.find_by(username: @username).try(:authenticate, @password)
+
+        # if user is valid
+        if @user
+            # go to homepage
+            redirect_to root_path
+        else
+            # rerender login form
+            render "new"
+        end  
+    end
+
+```
+
+## Adding a session on login
+
+```ruby
+  
+  def create
+        # try to log in
+        # get session params from the form
+        @form_data = params.require(:session)
+        # pull out the username and password from form data
+        @username = @form_data[:username]
+        @password = @form_data[:password]
+        
+        # lets check the user is who they say they are
+        @user = User.find_by(username: @username).try(:authenticate, @password)
+
+        # if user is valid
+        if @user
+
+            ###
+            # save the user to that users session
+            session[:user_id] = @user.id
+            ###
+            ###
+
+
+            # go to homepage
+            redirect_to root_path
+        else
+            # rerender login form
+            render "new"
+        end  
+    end
+
+```
+
+## Adding a session on sign up
+
+in users controller
+
+```ruby
+def create
+        # take the form params
+        # create a new user
+        @user = User.new(form_params)
+        # if its valid and it saves, go to the users index
+        # if not, see the form with errors
+        if @user.save
+
+          ###
+            # Save the session with the user
+            session[:user_id] = @user.id
+          ###
+
+            redirect_to users_path
+        else
+            render "new"
+        end
+    end
+```
+this keeps us logged in when we have signed up
+
+## Adding sign up and log in links
+
+
+in application.html.erb view
+
+```html
+  <nav>
+      <% if session[:user_id].present? %>
+        <%= link_to "Add a Review", new_review_path %>
+      <% else %>
+        <%= link_to "Sign Up", new_user_path %>
+        <%= link_to "Log In", new_session_path %>
+      <% end %>
+    </nav>
+```
+
+
+## Singular Resources and log out
+
+delete review is the same as delete session
+
+With sessions its one thing at a time
+
+in routes file change resources to resource to make it singular
+
+make sure to update refs to sessions is changed to session, this case there was only one in new.html.erb: sessions_path
+
+```resource :session```
+
+```html
+
+  <%= link_to "Log Out", session_path, method: :delete %>
+
+```
+
+then in sessions controller
+
+```ruby
+
+  def destroy
+      # log out
+      # remove the session completly
+      reset_session
+      # redirect to log in
+      redirect_to new_session_path
+  end
+
+```
+
+## The application controller
+
+seeing the user that is logged in
+
+rough and ready way...
+
+<%= User.find(@use[:user_id]).username %>
+
+longer but better way...
+
+in application_controller
+
+the application controller manages all controllers
+
+making our own function in the applications controller
+
+```ruby
+def find_current_user
+    @current_user = User.find(session[:user_id])
+end
+```
+in any view
+
+```<%= @current_user.username %>```
+Gets the username but this could be any field i.e email
+
+
+## Checking for login
+
+Currently we break on a logout attempt 
+We need to say if there is no userID then there is no user ergo we are logged out
+
+in applications controller
+``` ruby
+
+  def find_current_user
+      if session[:user_id].present? 
+          @current_user = User.find(session[:user_id])
+      else
+          @current_user = nil
+      end
+  end
+
+```
+
+if logged out we can still add a new review by going to the /reviews/new 
+address. We want to prevent this.
+
+create a new function in application controller
+
+```ruby
+
+  #check login status
+  def check_login
+    if session[:user_id].present?
+      # All Good
+    else
+
+      redirect_to new_session_path
+
+    end
+  end
+
+```
+
+in reviews controller at the top of the class
+
+```ruby
+
+  before_action :check_login
+
+```
+breaks reviews#index
+
+we want index and show so an anonymous (not logged in) user can still view reviews.
+
+```ruby
+
+  before_action :check_login, except: [:index, :show]
+
+```
+
+## Cleaning up our code
+
+session user id present is used alot.
+
+create a new method in application controller
+
+```ruby
+
+  def is_logged_in?
+
+    session[:user_id].present?
+
+  end
+
+```
+
+we can then in our if statements replace if session[:user_id].present?
+to if is_logged_in? which is more readable and DRY
+
+
+a special word in ruby for the opposite of if is unless
+
+We can change our if's where we want to act on the else to unless
+to shorten the statement.
+
+
+```ruby
+
+#Reviews Controller
+before_action :check_login, except: [:index, :show]
+
+# Application Controller
+def check_login
+  unless is_logged_in?
+      redirect_to new_session_path
+  end
+end
+```
+
+this now reads
+
+Before any action except #index and #show check for a login and redirect to the homepage unless we are logged in.
+
+we also check for login in a view
+
+application.html.erb
+
+```html
+
+   <nav>
+        
+        <% if is_logged_in? %>
+          <%= @current_user.username %>
+          <%= link_to "Log Out", session_path, method: :delete %>
+          <%= link_to "Add a Review", new_review_path %>
+        <% else %>
+          <%= link_to "Sign Up", new_user_path %>
+          <%= link_to "Log In", new_session_path %>
+        <% end %>
+        
+      </nav>
+
+```
+
+This wont work right away because we need to share our controller method with the views.
+
+```ruby
+
+  #Application Controller Top of File
+
+  # Methods to use in views
+    helper_method :is_logged_in?
+
+```
+
+## Updating our previous models
+
+so far we have
+
+- user sign up
+  creating new user model and handle it with a users controller
+- user log in
+  with the session controller
+- showing were logged in
+- handling log in and log out
+
+TODO 
+- Hooking up reviews and comments to users
+- User authorization
+- Bookmarking
+
+
+
+There is no relationship between comments,reviews and users
+the DB needs updating to include this.
+
+this means we need a new migration to update/ammend the database
+
+```bash
+
+  rails generate migration hook_up_comments_reviews_to_users 
+
+```
+
+```ruby
+
+  class HookUpCommentsReviewsToUsers < ActiveRecord::Migration[6.1]
+    def change
+
+      add_column :reviews, :user_id, :integer
+      add_column :comments, :user_id, :integer
+
+    end
+  end
+
+```
+
+```bash
+
+  rails db:migrate
+
+```
+
+user.rb
+``` ruby
+
+  class User < ApplicationRecord
+
+      has_many :reviews
+      has_many :comments
+
+      # Run has_secure_password
+      has_secure_password
+
+      # Validate username
+      validates :username, presence: true, uniqueness: true
+
+      # Validates email
+      validates :email, presence: true, uniqueness: true
+
+      # We dont need to validate real_name becuase it is an optional field
+
+  end
+
+```
+
+review.rb
+```ruby
+
+  class Review < ApplicationRecord
+
+    # add an association that has a 1-to-many relationship
+    has_many :comments
+
+    # Add an association to a user
+    belongs_to :user
+
+    # Geocoder
+    geocoded_by :address
+    after_validation :geocode
+
+    # Check model input
+    validates :title, presence: true
+    validates :body, length: { minimum: 10 }
+    validates :score, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }
+    validates :restaurant, presence: true
+    validates :address, presence: true
+
+    def to_param
+        id.to_s + "-" + title.parameterize
+    end  
+
+end
+
+```
+
+comment.rb
+```ruby
+
+  class Comment < ApplicationRecord
+    belongs_to :review
+    belongs_to :user
+
+    validates :body, presence: true
+
+    profanity_filter :body, :method => 'hollow'
+  end
+
+
+```
+
+
+## Adding users to controllers
+
+
+Models are now hooked together
+but the controllers arent
+
+reviews controller
+```ruby
+# define a new review
+    def create
+        # take info from form and add to model
+        @review = Review.new(form_params)
+
+        # Save Review to user
+        Review.user = @current_user
+
+
+        # if the model passes validation
+        if @review.save
+            # redirect to the homepage
+            redirect_to root_path
+        else
+            #otherwise show the new view
+            render "new"
+        end
+    end
+```
+
+comments controller
+
+```ruby
+ # define a new review
+    def create
+        # take info from form and add to model
+        @review = Review.new(form_params)
+
+        # Save Review to user
+        @review.user = @current_user
+
+
+        # if the model passes validation
+        if @review.save
+            # redirect to the homepage
+            redirect_to root_path
+        else
+            #otherwise show the new view
+            render "new"
+        end
+    end
+```
+
+in views/reviews/show (where comments are listed)
+
+```html
+<% @review.comments.order('created_at desc').each do |comment| %>
+    <div class="comment">
+        <%# <%= simple_format ProfanityFilter::Base.clean(comment.body, 'hollow') %>
+        <%# moved profanity filter to the model %>
+        <%= simple_format comment.body %>
+
+
+        <!-- Here -->
+        <p class="posted">Posted By: <%= comment.user %></p>
+
+
+        <p class="posted">Posted at: <%= time_ago_in_words comment.created_at %> ago</p>
+    </div>
+<% end %>
+```
+
+returns #<User:0x00007fadffeafb28>
+which is the user model so we need to get the field. because we already had comments before this was set up it will error out because some comments dont have a user model association. We need to wrap this in a check.
+
+```html
+<p class="posted">Posted By: 
+      <% if comment.user.present? %>
+          <%= comment.user.username %>
+      <% else %>
+          Anonymous
+      <% end %>
+</p>
+```
+
+
+## Creating a user profile page
+
+Adding a click through to a user profile
+
+```html
+
+<p class="posted">Posted By: 
+    <% if comment.user.present? %>
+        <%= link_to comment.user.username, user_path(comment.user) %>
+    <% else %>
+        Anonymous
+    <% end %>
+</p>
+
+```
+
+Users need a show function
+
+
+```ruby
+
+  #users controller
+  def show
+
+        @user = User.find(params[:id])
+        
+    end
+
+```
+
+UsersController#show is missing a template for request formats: text/html
+
+Then we create a show.html.erb in views/users
+
+```html
+
+<h2><%= @user.username %></h2>
+
+<p>Their email is <%= @user.email %></p>
+
+```
+
+add vanity url to users 
+
+so we transform /users/2 to /users/jameswood
+
+in users model
+
+```ruby
+def to_param
+    username
+end
+```
+  
+in show action in users controller
+change find to :username
+
+```ruby
+ def show
+
+        @user = User.find_by(params[:username])
+
+    end
+
+```
+
+## Removing actions
+
+if the user isnt the logged in user
+
+```html
+<% if @review.user == @current_user %>
+<div class="actions">
+    <%= link_to "Edit this Review", edit_review_path(@review) %>
+    <%= link_to "Delete Review", review_path(@review), method: :delete, data: { confirm: "Are you sure?" } %>
+</div>
+<% end %>
+```
+
+now a user cant edit a review that isnt theirs, however they can if they go to the /edit url to fix this we have to Authorise he controller action.
+
+
+## Authorizing controlller actions
+
+in #edit and #destroy and #update of reviews controller
+
+```ruby
+ def edit 
+        # find the review to edit
+        @review = Review.find(params[:id])
+        
+        if @review.user != @current_user
+            redirect_to root_path
+        end
+    end
+```
+
+```ruby
+ def destroy
+        # find the individual review
+        @review = Review.find(params[:id])
+        
+        if @review.user == @current_user
+            # destroy it if they have access
+            @review.destroy
+        end
+        # redirect to homepage
+        redirect_to root_path
+    end
+```
+
+```ruby
+ # update the edited review in the database
+    def update 
+        # find review
+        @review = Review.find(params[:id])
+        
+        if @review.user != @current_user
+            redirect_to root_path
+        else
+            # update with new info
+            if @review.update(form_params)
+                # redirect to somewhere new
+                redirect_to review_path(@review)
+            else 
+                render "edit"
+            end
+        end
+    end
+```
+
+
+## Introducing bookmarks
+
+A review has many bookmarks
+A user has many bookmarks 
+A user can only have one bookmark per review
+
+
+## The bookmark model
+
+generate bookmark model
+
+```bash
+rails generate model Bookmark review:belongs_to user:belongs_to
+```
+
+run the generated migration after checking
+
+```bash
+rails db:migrate
+```
+
+add has_many :bookmarks to review.rb and user.rb
+
+then in bookmark.rb we want to make it so 1 user per review
+
+[check rails validations](https://guides.rubyonrails.org/active_record_validations.html)
+
+```ruby
+class Bookmark < ApplicationRecord
+  belongs_to :review
+  belongs_to :user
+
+  ###
+  validates :review, uniqueness: { scope: :user }
+  ###
+end
+
+```
+
+## Creating bookmarks
+
+Generate Bookmark Controller
+
+```bash
+rails generate controller bookmarks
+```
+
+in config/routes.rb
+
+```ruby
+
+resources :reviews do 
+    resources :comments
+    resource :bookmark
+  end
+
+```
+
+in reviews show view
+
+```
+<% if is_logged_in? %>
+
+   <p>
+       <% link_to "Bookmark", review_bookmark_path(@review), method: :post %>
+   </p>
+
+<% end %>
+```
+
+This will now link to the bookmarks controller
+so in the controller...
+
+```ruby
+class BookmarksController < ApplicationController
+
+    before_action :check_login
+
+    def create
+        @review = Review.find(params[:review_id])
+
+        @bookmark = @review.bookmarks.new
+        @bookmark.user = @current_user
+
+        @bookmark.save
+
+        redirect_to review_path(@review)
+
+    end
+
+end
+```
+
+## Un-bookmarking
+
+```html
+<% if is_logged_in? %>
+   <p>
+        <% if @review.bookmarks.where(user: @current_user).any? %>
+            <%= link_to "UnBookmark", review_bookmark_path(@review), method: :delete %>
+        <% else %>
+            <%= link_to "Bookmark", review_bookmark_path(@review), method: :post %>
+        <% end %>
+   </p>
+
+<% end %>
+```
+
+```ruby
+def destroy
+      @review = Review.find(params[:review_id])
+
+      @review.bookmarks.where(user: @current_user).delete_all
+
+      redirect_to review_path(@review)
+  end
+```
+
+## Listing all bookmarks
+
+## Updating Heroku
+
+## Homework
+
 
 .
 .

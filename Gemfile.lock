@@ -65,6 +65,7 @@ GEM
       zeitwerk (~> 2.3)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
+    bcrypt (3.1.16)
     bindex (0.8.1)
     bootsnap (1.10.3)
       msgpack (~> 1.2)
@@ -218,6 +219,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_link_to
+  bcrypt (~> 3.1.7)
   bootsnap (>= 1.4.4)
   byebug
   capybara (>= 3.26)

@@ -8,6 +8,9 @@ class CommentsController < ApplicationController
         # the new comment is to be added to the comments field in the reviews db table
         @comment = @review.comments.new(params.require(:comment).permit(:body))
 
+        #save the Comment to the User
+        @comment.user = @current_user
+
         # save the comment
         @comment.save
 
